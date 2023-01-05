@@ -33,7 +33,8 @@ class Model
 	}
 
 	public function getValues()
-	{
+	{		
+		//echo "<script>alert('". json_encode($this->values) ."');</script>";
 		return $this->values;
 	}
 }

@@ -58,6 +58,69 @@ class User extends Model
 	{
 		$_SESSION[User::SESSION] = NULL;
 	}
+
+	public static function listAll()
+	{
+		$sql = new Sql();
+
+		return $sql->select("SELECT * FROM tb_users u INNER JOIN tb_persons p USING(idperson) order by  p.desperson");
+	}
+
+	public function save()
+	{
+		$sql = new Sql();
+		
+		$results = $sql->select("CALL sp_users_save(:pdesperson, :pdeslogin, :pdespassword, :pdesemail, :pnrphone, :pinadmin)",
+			array(
+				":pdesperson"=>$this->getdesperson(),
+				":pdeslogin"=>$this->getdeslogin(),
+				":pdespassword"=>$this->getdespassword(),
+				":pdesemail"=>$this->getdesemail(),
+				":pnrphone"=>$this->getnrphone(),
+				":pinadmin"=>$this->getinadmin()
+			));
+
+		$this->setData($results[0]);
+	}
+
+	public function get($iduser)
+	{				
+		$sql = new Sql();
+
+		$res = $sql->select("SELECT * FROM tb_users u INNER JOIN tb_persons p USING(idperson) WHERE u.iduser=:iduser", array(
+			":iduser"=>$iduser
+		));
+
+		$this->setData($res[0]);
+	}
+
+	public function update()
+	{
+		$sql = new Sql();
+		
+		$results = $sql->select("CALL sp_usersupdate_save(:piduser, :pdesperson, :pdeslogin, :pdespassword, :pdesemail, :pnrphone, :pinadmin)",
+			array(
+				":piduser"=>$this->getiduser(),
+				":pdesperson"=>$this->getdesperson(),
+				":pdeslogin"=>$this->getdeslogin(),
+				":pdespassword"=>$this->getdespassword(),
+				":pdesemail"=>$this->getdesemail(),
+				":pnrphone"=>$this->getnrphone(),
+				":pinadmin"=>$this->getinadmin()
+			));
+
+		$this->setData($results[0]);
+	}
+
+	public function delete()
+	{
+		$sql = new Sql();
+		
+		$sql->query("CALL sp_users_delete(:piduser)",array
+			(
+				":piduser"=>$this->getiduser()
+			));
+	}
 }
 
  ?>

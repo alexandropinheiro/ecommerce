@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'alexandropinheiro/ecommerce',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '646964b975eb71ef11d2b2f4ca386eae582bbac7',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,18 +11,18 @@
     ),
     'versions' => array(
         'alexandropinheiro/ecommerce' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '646964b975eb71ef11d2b2f4ca386eae582bbac7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'phpmailer/phpmailer' => array(
-            'pretty_version' => 'v5.2.22',
-            'version' => '5.2.22.0',
-            'reference' => 'b18cb98131bd83103ccb26a888fdfe3177b8a663',
+            'pretty_version' => 'v6.7.1',
+            'version' => '6.7.1.0',
+            'reference' => '49cd7ea3d2563f028d7811f06864a53b1f15ff55',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(),

@@ -4,6 +4,8 @@ namespace Hcode\Model;
 
 use \Hcode\DB\Sql;
 use \Hcode\Model;
+use \Hcode\Security\Crypt;
+use \Hcode\Mailer;
 
 class User extends Model
 {	
@@ -26,7 +28,9 @@ class User extends Model
 
 		$data = $results[0];
 
-		if (password_verify($password, $data["despassword"]) === true)
+		$userPassword = Crypt::decryptPassword($data["despassword"]);
+
+		if (strcmp($password, $userPassword) === 0)
 		{
 			$user = new User();
 
@@ -120,6 +124,104 @@ class User extends Model
 			(
 				":piduser"=>$this->getiduser()
 			));
+	}
+
+	public static function getForgot($email)
+	{
+		$sql = new Sql();
+
+		$results = $sql->select("
+			SELECT *
+			  FROM tb_persons a
+			 INNER JOIN tb_users b USING(idperson)
+			 WHERE a.desemail = :email;
+			", array(":email"=>$email));
+
+		if (count($results) === 0)
+		{
+			throw new \Exception("Não foi possível recuperar a senha.");			
+		}
+
+		$data = $results[0];
+
+		$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
+			":iduser"=>$data['iduser'],
+			":desip"=>$_SERVER["REMOTE_ADDR"]
+		));
+
+		if (count($results2) === 0)
+		{
+			throw new \Exception("Não foi possível recuperar a senha.");
+		}
+
+		$dataRecovery = $results2[0];
+
+		$code = base64_encode(Crypt::encryptForgot($dataRecovery['idrecovery']));
+
+		$link = "http://www.apecommerce.com.br/admin/forgot/reset?code=$code";
+
+		$mailer = new Mailer(
+			$data["desemail"],
+			$data["desperson"],
+			"Redefinir senha AP Store",
+			"forgot",
+			array(
+				"name"=>$data['desperson'],
+				"link"=>$link
+			)
+		);
+
+		$mailer->send();
+
+		return $data;
+	}
+
+	public static function validForgotDecrypt($code)
+	{
+		$decode = base64_decode($code);
+
+		$idrecovery = Crypt::decryptForgot($decode);
+
+		$sql = new Sql();
+
+		$results = $sql->select("
+			SELECT * 
+			  FROM tb_userspasswordsrecoveries r 
+			 INNER JOIN tb_users u USING (iduser)
+			 INNER JOIN tb_persons p USING(idperson)
+			 WHERE r.idrecovery = :idrecovery
+			   AND r.dtrecovery IS NULL
+			   AND DATE_ADD(r.dtregister, INTERVAL 1 HOUR) >= NOW()", array(
+				":idrecovery"=>$idrecovery
+			));
+
+		if (count($results) === 0)
+		{
+			return NULL;
+		}
+
+		return $results[0];
+	}
+
+	public static function setForgotUser($idrecovery)
+	{
+		$sql = new Sql();
+
+		$sql->query("UPDATE tb_userspasswordsrecoveries SET dtrecovery = NOW() WHERE idrecovery = :idrecovery", array(
+			":idrecovery"=>$idrecovery
+		));
+	}
+
+	public function setPassword($password)
+	{
+		$encryptPassword = Crypt::encryptPassword($password);
+
+		$sql = new Sql();
+
+		$sql->query("UPDATE tb_users SET despassword = :password WHERE iduser = :iduser", array(
+			":password"=>$encryptPassword,
+			":iduser"=>$this->getiduser()
+		));
 	}
 }
 

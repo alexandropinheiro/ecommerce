@@ -14,7 +14,7 @@ class Model
 
 		switch ($method) {
 			case "get":
-				return $this->values[$fieldName];
+				return isset($this->values[$fieldName]) ? $this->values[$fieldName] : NULL;
 			break;
 			
 			case "set":
@@ -34,7 +34,6 @@ class Model
 
 	public function getValues()
 	{		
-		//echo "<script>alert('". json_encode($this->values) ."');</script>";
 		return $this->values;
 	}
 }

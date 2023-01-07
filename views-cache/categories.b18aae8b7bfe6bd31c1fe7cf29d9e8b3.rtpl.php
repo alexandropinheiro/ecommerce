@@ -20,6 +20,7 @@
             
             <div class="box-header">
               <a href="/admin/categories/create" class="btn btn-success">Cadastrar Categoria</a>
+              <a href="/admin/categories/siteupdate" class="btn btn-default">Atualizar Site</a>
             </div>
 
             <div class="box-body no-padding">

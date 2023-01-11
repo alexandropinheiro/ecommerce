@@ -109,6 +109,7 @@ class Category extends Model
 
 		$totalItems = (int)$resultTotal[0]['nrtotal'];
 
+
 		return [
 			'data'=>Product::checkList($results),
 			'total'=>$totalItems,

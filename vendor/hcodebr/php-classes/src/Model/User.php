@@ -10,6 +10,7 @@ use \Hcode\Mailer;
 class User extends Model
 {	
 	const SESSION = "User";
+	const SESSION_ERRO = "UserErro";
 
 	public static function getFromSession()
 	{
@@ -27,7 +28,7 @@ class User extends Model
 	{
 		if (!isset($_SESSION[User::SESSION]) 
 			|| !$_SESSION[User::SESSION]
-			|| !$_SESSION[User::SESSION]["iduser"] > 0)
+			|| !(int)$_SESSION[User::SESSION]["iduser"] > 0)
 		{
 			return false;
 		}
@@ -37,7 +38,7 @@ class User extends Model
 			{
 				return true;
 			}
-			else if ($inadmin === false)
+			else if (!$inadmin)
 			{
 				return true;
 			}
@@ -87,9 +88,11 @@ class User extends Model
 	{
 		if (!User::checkLogin($inadmin))
 		{
-			header("Location: /admin/login");
+			$route = ($inadmin) ? "/admin/login" : "/login";
+			
+			header("Location: $route");
 			exit;
-		}
+		}		
 	}
 
 	public static function logout()
@@ -110,7 +113,7 @@ class User extends Model
 		
 		$results = $sql->select("CALL sp_users_save(:pdesperson, :pdeslogin, :pdespassword, :pdesemail, :pnrphone, :pinadmin)",
 			array(
-				":pdesperson"=>$this->getdesperson(),
+				":pdesperson"=>utf8_decode($this->getdesperson()),
 				":pdeslogin"=>$this->getdeslogin(),
 				":pdespassword"=>$this->getdespassword(),
 				":pdesemail"=>$this->getdesemail(),
@@ -129,7 +132,14 @@ class User extends Model
 			":iduser"=>$iduser
 		));
 
-		$this->setData($res[0]);
+		if (count($res) > 0){
+			$data = $res[0];
+
+			$data['desperson'] = utf8_encode($data['desperson']);
+
+			$this->setData($res[0]);	
+		}
+		
 	}
 
 	public function update()
@@ -139,7 +149,7 @@ class User extends Model
 		$results = $sql->select("CALL sp_usersupdate_save(:piduser, :pdesperson, :pdeslogin, :pdespassword, :pdesemail, :pnrphone, :pinadmin)",
 			array(
 				":piduser"=>$this->getiduser(),
-				":pdesperson"=>$this->getdesperson(),
+				":pdesperson"=>utf8_decode($this->getdesperson()),
 				":pdeslogin"=>$this->getdeslogin(),
 				":pdespassword"=>$this->getdespassword(),
 				":pdesemail"=>$this->getdesemail(),
@@ -256,6 +266,23 @@ class User extends Model
 			":password"=>$encryptPassword,
 			":iduser"=>$this->getiduser()
 		));
+	}
+
+	public static function setError($msg)
+	{
+		$_SESSION[User::SESSION_ERRO] = $msg;
+	}
+
+	public static function getError()
+	{
+		$msg = isset($_SESSION[User::SESSION_ERRO]) ? $_SESSION[User::SESSION_ERRO] : '';
+		User::clearMsgError();
+		return $msg;
+	}
+
+	public static function clearMsgError()
+	{
+		$_SESSION[User::SESSION_ERRO] = NULL;
 	}
 }
 

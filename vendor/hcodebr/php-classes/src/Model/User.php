@@ -172,7 +172,7 @@ class User extends Model
 			));
 	}
 
-	public static function getForgot($email)
+	public static function getForgot($email, $inadmin = true)
 	{
 		$sql = new Sql();
 
@@ -204,7 +204,9 @@ class User extends Model
 
 		$code = base64_encode(Crypt::encryptForgot($dataRecovery['idrecovery']));
 
-		$link = "http://www.apecommerce.com.br/admin/forgot/reset?code=$code";
+		$middleRoute = $inadmin ? "/admin" : "";
+
+		$link = "http://www.apecommerce.com.br$middleRoute/forgot/reset?code=$code";
 
 		$mailer = new Mailer(
 			$data["desemail"],

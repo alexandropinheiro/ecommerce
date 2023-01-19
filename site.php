@@ -190,7 +190,7 @@ $app->get("/logout", function () {
 
 	header("Location: /login");
 	exit;
-	
+
 });
 
 $app->post("/register", function(){
@@ -234,6 +234,78 @@ $app->post("/register", function(){
 
 	header("Location: /login");
 	exit;
+});
+
+$app->get('/forgot', function() {
+
+	$page = new Page();
+
+	$page->setTpl("forgot");
+
+});
+
+$app->post("/forgot", function() {
+
+	$user = User::getForgot($_POST["email"], false);
+
+	header("Location: /forgot/sent");
+	exit;
+
+});
+
+$app->get("/forgot/sent", function() {
+
+	$page = new Page();
+
+	$page->setTpl("forgot-sent");
+});
+
+$app->get('/forgot/reset', function() {
+
+	$code = $_GET['code'];
+
+	$user = User::validForgotDecrypt($code);
+
+	if ($user === NULL) 
+	{
+		header("Location: /forgot/expirated");
+		exit;
+	}
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user["desperson"],
+		"code"=>$code
+	));
+
+});
+
+$app->post('/forgot/reset', function() {
+
+	$code = $_POST['code'];
+
+	$forgot = User::validForgotDecrypt($code);
+
+	User::setForgotUser($forgot['idrecovery']);
+
+	$user = new User();
+
+	$user->get((int)$forgot['iduser']);
+
+	$user->setPassword($_POST['password']);
+
+	$page = new Page();
+
+	$page->setTpl("forgot-reset-success");
+
+});
+
+$app->get("/forgot/expirated", function() {
+
+	$page = new Page();
+
+	$page->setTpl("forgot-expirated");
 });
 
  ?>

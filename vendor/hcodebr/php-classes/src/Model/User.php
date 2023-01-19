@@ -11,6 +11,8 @@ class User extends Model
 {	
 	const SESSION = "User";
 	const SESSION_ERRO = "UserErro";
+	const SESSION_REGISTER = "UserRegister";
+	const SESSION_REGISTER_ERRO = "UserRegisterErrors";
 
 	public static function getFromSession()
 	{
@@ -283,6 +285,90 @@ class User extends Model
 	public static function clearMsgError()
 	{
 		$_SESSION[User::SESSION_ERRO] = NULL;
+	}
+
+	public static function setRegisterError($errors)
+	{
+		$_SESSION[User::SESSION_REGISTER_ERRO] = $errors;
+	}
+
+	public static function getRegisterError()
+	{
+		$errors = isset($_SESSION[User::SESSION_REGISTER_ERRO]) ? $_SESSION[User::SESSION_REGISTER_ERRO] : [];
+		User::clearRegisterError();
+		return $errors;
+	}
+
+	public static function clearRegisterError()
+	{
+		$_SESSION[User::SESSION_REGISTER_ERRO] = NULL;
+	}
+
+	public static function setRegisterSession($user)
+	{
+		$_SESSION[User::SESSION_REGISTER] = $user;
+	}
+
+	public static function getRegisterSession()
+	{
+		$msg = isset($_SESSION[User::SESSION_REGISTER]) 
+			? $_SESSION[User::SESSION_REGISTER] 
+			: [
+				'name'=>'',
+				'email'=>'',
+				'phone'=>''
+			  ];
+		User::clearRegisterSession();
+		return $msg;
+	}
+
+	public static function clearRegisterSession()
+	{
+		$_SESSION[User::SESSION_REGISTER] = NULL;
+	}
+
+	public static function getByEmail($email)
+	{
+		$sql = new Sql();
+
+		$results = $sql->select("
+			SELECT * 
+			  FROM tb_persons
+			 WHERE desemail = :desemail", array(
+				":desemail"=>$email
+			));
+
+		if (count($results) === 0)
+		{
+			return NULL;
+		}
+
+		return $results[0];
+	}
+
+	public static function hasRegisterErrors($register)
+	{
+		$errors = [];
+		$return = false;
+
+		if (!isset($register['name']) || $register['name'] === '') {
+			array_push($errors, ['msg'=>'O campo NOME é obrigatório.']);
+			$return = true;
+		}
+
+		if (!isset($register['email']) || $register['email'] === '') {
+			array_push($errors, ['msg'=>'O campo E-MAIL é obrigatório.']);
+			$return = true;
+		}
+
+		if (!isset($register['password']) || $register['password'] === '') {
+			array_push($errors, ['msg'=>'O campo SENHA é obrigatório.']);
+			$return = true;
+		}
+
+		User::setRegisterError($errors);
+
+		return $return;
 	}
 }
 

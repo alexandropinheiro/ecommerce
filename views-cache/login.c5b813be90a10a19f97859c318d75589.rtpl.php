@@ -49,22 +49,36 @@
                 </div>
                 <?php } ?>
 
+
+                <?php if( $hasListErrors == 1 ){ ?>
+
+                <div class="alert alert-danger">
+                <ul>
+                    <?php $counter1=-1;  if( isset($registerErrors) && ( is_array($registerErrors) || $registerErrors instanceof Traversable ) && sizeof($registerErrors) ) foreach( $registerErrors as $key1 => $value1 ){ $counter1++; ?>
+
+                    <li><?php echo htmlspecialchars( $value1["msg"], ENT_COMPAT, 'UTF-8', FALSE ); ?></li>
+                    <?php } ?>
+
+                </ul>
+                </div>
+                <?php } ?>
+
                 <form id="register-form-wrap" action="/register" class="register" method="post">
                     <h2>Criar conta</h2>
                     <p class="form-row form-row-first">
                         <label for="nome">Nome Completo <span class="required">*</span>
                         </label>
-                        <input type="text" id="nome" name="name" class="input-text" value="">
+                        <input type="text" id="nome" name="name" class="input-text" value="<?php echo htmlspecialchars( $registerValues["name"], ENT_COMPAT, 'UTF-8', FALSE ); ?>">
                     </p>
                     <p class="form-row form-row-first">
                         <label for="email">E-mail <span class="required">*</span>
                         </label>
-                        <input type="email" id="email" name="email" class="input-text" value="">
+                        <input type="email" id="email" name="email" class="input-text" value="<?php echo htmlspecialchars( $registerValues["email"], ENT_COMPAT, 'UTF-8', FALSE ); ?>">
                     </p>
                     <p class="form-row form-row-first">
                         <label for="phone">Telefone
                         </label>
-                        <input type="text" id="phone" name="phone" class="input-text" value="">
+                        <input type="text" id="phone" name="phone" class="input-text" value="<?php echo htmlspecialchars( $registerValues["phone"], ENT_COMPAT, 'UTF-8', FALSE ); ?>">
                     </p>
                     <p class="form-row form-row-last">
                         <label for="senha">Senha <span class="required">*</span>

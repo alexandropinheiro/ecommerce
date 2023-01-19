@@ -6,6 +6,7 @@ use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
 use \Hcode\Model\Address;
 use \Hcode\Model\User;
+use \Hcode\Security\Crypt;
 
 $app->get('/', function() {
     
@@ -154,8 +155,13 @@ $app->get("/login", function () {
 	
 	$page = new Page();
 
+	$registerErrors = User::getRegisterError();
+
 	$page->setTpl("login", [
-		'error'=>User::getError()
+		'error'=>User::getError(),
+		'hasListErrors'=>count($registerErrors) > 0 ? 1 : 0,
+		'registerErrors' => $registerErrors,
+		'registerValues'=>User::getRegisterSession()
 	]);
 
 });
@@ -182,12 +188,52 @@ $app->get("/logout", function () {
 	
 	User::logout();
 
-	$page = new Page();
+	header("Location: /login");
+	exit;
+	
+});
 
-	$page->setTpl("login", [
-		'error'=>User::getError()
+$app->post("/register", function(){
+
+	User::setRegisterSession($_POST);
+	User::clearRegisterError();
+
+	$hasRegisterError = User::hasRegisterErrors($_POST);
+	
+	if ($hasRegisterError){
+
+		header("Location: /login");
+		exit;
+
+	}
+
+	$existsUser = User::getByEmail($_POST['email']);
+
+	if ($existsUser != NULL){
+
+		User::setError("Já existe um usuário registrado com esse e-mail. Clique em 'Esqueceu a Senha?' para recuperar o acesso.");
+		header("Location: /login");
+		exit;
+
+	}
+
+	$user = new User();
+
+	$user->setData([
+		'inadmin'=>0,
+		'deslogin'=>$_POST['email'],
+		'desemail'=>$_POST['email'],
+		'desperson'=>$_POST['name'],
+		'despassword'=>Crypt::encryptPassword($_POST['password']),
+		'nrphone'=>$_POST['phone']
 	]);
 
+	$user->save();
+
+	User::clearRegisterSession();
+
+	header("Location: /login");
+	exit;
 });
 
  ?>

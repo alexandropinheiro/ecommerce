@@ -7,6 +7,7 @@ use \Hcode\Model\Cart;
 use \Hcode\Model\Address;
 use \Hcode\Model\User;
 use \Hcode\Security\Crypt;
+use \Hcode\Utils\Session;
 
 $app->get('/', function() {
     
@@ -306,6 +307,67 @@ $app->get("/forgot/expirated", function() {
 	$page = new Page();
 
 	$page->setTpl("forgot-expirated");
+});
+
+$app->get("/profile", function() {
+
+	User::verifyLogin(false);
+
+	$registerErrors = User::getRegisterError();
+
+	$userErrorMsg = User::getError();
+
+	$profileMessage = Session::getSuccessMessage();
+
+	if (count($registerErrors) > 0 || $userErrorMsg != '') {
+
+		$formData = User::getProfileSession();
+
+	} else {
+
+		$user = User::getFromSession();
+		$formData = $user->getValues();
+
+	}
+
+	$page = new Page();
+
+	$page->setTpl("profile", [
+		'user'=>$formData,
+		'profileMsg'=>$profileMessage,
+		'hasListErrors'=>count($registerErrors) > 0 ? 1 : 0,
+		'registerErrors' => $registerErrors,
+		'profileError'=>$userErrorMsg
+	]);
+});
+
+$app->post("/profile", function() {
+
+	User::verifyLogin(false);
+
+	User::setProfileSession($_POST);
+	User::clearRegisterError();
+
+	$user = User::getFromSession();
+
+	$hasProfileErrors = User::hasProfileErrors($_POST, $user);
+
+	if ($hasProfileErrors){
+		header("Location: /profile");
+		exit;
+	}
+
+	$_POST['inadmin'] = $user->getinadmin();
+	$_POST['despassword'] = $user->getdespassword();
+
+	$user->setData($_POST);
+
+	$user->update();
+
+	Session::setSuccessMessage('Dados alterados com sucesso!');
+
+	header("Location: /profile");
+	exit;
 });
 
  ?>

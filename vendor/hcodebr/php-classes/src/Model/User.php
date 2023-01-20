@@ -12,6 +12,7 @@ class User extends Model
 	const SESSION = "User";
 	const SESSION_ERRO = "UserErro";
 	const SESSION_REGISTER = "UserRegister";
+	const SESSION_PROFILE = "UserProfile";
 	const SESSION_REGISTER_ERRO = "UserRegisterErrors";
 
 	public static function getFromSession()
@@ -49,6 +50,26 @@ class User extends Model
 				return false;
 			}
 		}
+	}
+
+	public static function checkLoginExists($email)
+	{
+
+		$return = false;
+
+		$sql = new Sql();
+
+		$results = $sql->select("SELECT 1 FROM tb_persons WHERE desemail = :EMAIL", array(
+			":EMAIL"=>$email
+		));
+
+		if (count($results) > 0)
+		{
+			$return = true;
+		}
+
+		return $return;
+
 	}
 
 	public static function login($login, $password)
@@ -140,8 +161,14 @@ class User extends Model
 			$data['desperson'] = utf8_encode($data['desperson']);
 
 			$this->setData($res[0]);	
-		}
-		
+		}		
+	}
+
+	public function getValues()
+	{
+		$this->get($this->getiduser());
+
+		return parent::getValues();
 	}
 
 	public function update()
@@ -151,7 +178,7 @@ class User extends Model
 		$results = $sql->select("CALL sp_usersupdate_save(:piduser, :pdesperson, :pdeslogin, :pdespassword, :pdesemail, :pnrphone, :pinadmin)",
 			array(
 				":piduser"=>$this->getiduser(),
-				":pdesperson"=>utf8_decode($this->getdesperson()),
+				":pdesperson"=>$this->getdesperson(),
 				":pdeslogin"=>$this->getdeslogin(),
 				":pdespassword"=>$this->getdespassword(),
 				":pdesemail"=>$this->getdesemail(),
@@ -329,6 +356,29 @@ class User extends Model
 		$_SESSION[User::SESSION_REGISTER] = NULL;
 	}
 
+	public static function setProfileSession($profile)
+	{
+		$_SESSION[User::SESSION_PROFILE] = $profile;
+	}
+
+	public static function getProfileSession()
+	{
+		$profile = isset($_SESSION[User::SESSION_PROFILE]) 
+			? $_SESSION[User::SESSION_PROFILE] 
+			: [
+				'desperson'=>'',
+				'desemail'=>'',
+				'nrphone'=>''
+			  ];
+		User::clearProfileSession();
+		return $profile;
+	}
+
+	public static function clearProfileSession()
+	{
+		$_SESSION[User::SESSION_PROFILE] = NULL;
+	}
+
 	public static function getByEmail($email)
 	{
 		$sql = new Sql();
@@ -366,6 +416,33 @@ class User extends Model
 		if (!isset($register['password']) || $register['password'] === '') {
 			array_push($errors, ['msg'=>'O campo SENHA é obrigatório.']);
 			$return = true;
+		}
+
+		User::setRegisterError($errors);
+
+		return $return;
+	}
+
+	public static function hasProfileErrors($register, $user)
+	{
+		$errors = [];
+		$return = false;
+
+		if (!isset($register['desperson']) || $register['desperson'] === '') {
+			array_push($errors, ['msg'=>'O campo NOME COMPLETO é obrigatório.']);
+			$return = true;
+		}
+
+		if (!isset($register['desemail']) || $register['desemail'] === '') {
+			array_push($errors, ['msg'=>'O campo E-MAIL é obrigatório.']);
+			$return = true;
+		}
+
+		if ($user->getdesemail() !== $register['desemail']){
+			if (User::checkLoginExists($register['desemail'])){
+				array_push($errors, ['msg'=>'E-mail já cadastrado por outro usuário.']);
+				$return = true;
+			}
 		}
 
 		User::setRegisterError($errors);

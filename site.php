@@ -126,6 +126,8 @@ $app->get("/cart/:idproduct/remove", function($idproduct) {
 
 $app->post("/cart/freight", function() {
 
+	Cart::clearMsgError();
+
 	$cart = Cart::getFromSession();
 
 	$cart->setFreight($_POST['zipcode']);
@@ -138,17 +140,117 @@ $app->get("/checkout", function () {
 	
 	User::verifyLogin(false);
 
+	$address = new Address();
 	$cart = Cart::getFromSession();
 
-	$address = new Address();
+	$erroMsg = Session::getError();
+
+	if ($erroMsg !== ''){
+		$loadAddress = Session::getAddressSession();
+	}
+	else
+	{
+		if (!isset($_GET['zipcode'])){
+			$_GET['zipcode'] = $cart->getdeszipcode();
+		}
+
+		if (isset($_GET['zipcode']) && $_GET['zipcode'] === ''){
+			if (!$address->getdesaddress()) $address->setdesaddress('');
+			if (!$address->getdescomplement()) $address->setdescomplement('');
+			if (!$address->getdesdistrict()) $address->setdesdistrict('');
+			if (!$address->getdescity()) $address->setdescity('');
+			if (!$address->getdesstate()) $address->setdesstate('');
+			if (!$address->getdescountry()) $address->setdescountry('');
+			if (!$address->getdeszipcode()) $address->setdeszipcode('');
+		}
+
+		if (isset($_GET['zipcode'])){
+			$address->loadFromCep($_GET['zipcode']);
+
+			$cart->setdeszipcode($_GET['zipcode']);
+
+			$cart->save();
+
+			$cart->getCalculateTotal();
+		}
+
+		$loadAddress = $address->getValues();
+	}	
 
 	$page = new Page();
 
 	$page->setTpl("checkout", [
 		'cart'=>$cart->getValues(),
-		'address'=>$address->getValues(),
-		'error'=>''
+		'address'=>$loadAddress,
+		'products'=>$cart->getProducts(),
+		'error'=>$erroMsg
 	]);
+
+});
+
+$app->post("/checkout", function() {
+
+	User::verifyLogin(false);
+
+	Session::setAddressSession($_POST);
+
+	$verify = true;
+
+	if (isset($_POST['zipcode']) && $_POST['zipcode'] === ''){
+		Session::setError("Informe o CEP!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['desaddress']) && $_POST['desaddress'] === ''){
+		Session::setError("Informe o endereço!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['descomplement']) && $_POST['descomplement'] === ''){
+		Session::setError("Informe o complemento!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['desdistrict']) && $_POST['desdistrict'] === ''){
+		Session::setError("Informe o bairro!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['descity']) && $_POST['descity'] === ''){
+		Session::setError("Informe a cidade!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['desstate']) && $_POST['desstate'] === ''){
+		Session::setError("Informe o estado!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	if (isset($_POST['descountry']) && $_POST['descountry'] === ''){
+		Session::setError("Informe o país!");
+		header("Location: /checkout");
+		exit;
+	}
+
+	$user = User::getFromSession();
+
+	$address = new Address();
+
+	$_POST['deszipcode'] = $_POST['zipcode'];
+	$_POST['idperson'] = $user->getidperson();
+
+	$address->setData($_POST);
+
+	$address->save();
+
+	header("Location: /order");
+	exit;
 
 });
 
@@ -369,5 +471,7 @@ $app->post("/profile", function() {
 	header("Location: /profile");
 	exit;
 });
+
+
 
  ?>

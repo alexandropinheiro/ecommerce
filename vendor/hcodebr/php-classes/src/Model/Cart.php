@@ -204,8 +204,6 @@ class Cart extends Model
 
 			$arrayMsgErro = (array)$result->MsgErro;
 
-			//var_dump($arrayMsgErro != [] && $arrayMsgErro != '');
-			//exit;
 
 			if ($arrayMsgErro != [] && $arrayMsgErro != '')
 			{
@@ -274,7 +272,7 @@ class Cart extends Model
 	public function getCalculateTotal()
 	{
 		$this->updateFreight();
-		
+
 		$totals = $this->getProductTotals();
 
 		$this->setvlsubtotal($totals['vlprice']);

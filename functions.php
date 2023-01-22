@@ -5,8 +5,15 @@ use \Hcode\Model\User;
 function formatPrice($vlprice)
 {
 	if (!$vlprice > 0) $vlprice = 0;
-	
+
 	return "R$".number_format($vlprice, 2, ",", ".");
+}
+
+function formatValue($vlprice)
+{
+	if (!$vlprice > 0) $vlprice = 0;
+
+	return number_format($vlprice, 2, ",", ".");
 }
 
 function checkLogin($inadmin = true){

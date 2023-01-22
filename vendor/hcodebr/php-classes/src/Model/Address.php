@@ -11,8 +11,6 @@ class Address extends Model
 	{
 		$nrcep = str_replace("-", "", $nrcep);
 
-		//https://viacep.com.br/ws/28980116/json/
-
 		$ch = curl_init();
 
 		curl_setopt($ch, CURLOPT_URL, "https://viacep.com.br/ws/$nrcep/json/");
@@ -59,7 +57,7 @@ class Address extends Model
 				":pdesdistrict"=>utf8_decode($this->getdesdistrict())
 			));
 
-		if ($results > 0) {
+		if (count($results) > 0) {
 			$this->setData($results[0]);
 		}			
 	}

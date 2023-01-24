@@ -467,6 +467,37 @@ class User extends Model
 
 		return $results;
 	}
+
+	public static function getPage($search, $page = 1, $itemsPerPage = 2)
+	{
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+		
+		$selectCommand =
+		    "SELECT SQL_CALC_FOUND_ROWS *
+			   FROM tb_users u
+			  INNER JOIN tb_persons p USING(idperson)
+			  WHERE p.desperson LIKE :search
+			     OR p.desemail LIKE :search
+			     OR u.deslogin LIKE :search
+			  LIMIT $start, $itemsPerPage";
+ 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+
+		$results = $sql->select($selectCommand, array(
+			':search'=>'%'.$search.'%'
+		));
+
+		$resultTotal = $sql->select($totalCommand);
+
+		$totalItems = (int)$resultTotal[0]['nrtotal'];
+
+		return [
+			'data'=>$results,
+			'total'=>(int)$totalItems,
+			'pages'=>ceil($totalItems / $itemsPerPage)
+		];
+	}
 }
 
  ?>

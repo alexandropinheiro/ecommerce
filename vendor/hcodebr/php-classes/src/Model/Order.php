@@ -45,6 +45,34 @@ class Order extends Model
 			$this->setData($results[0]);
 		}
 	}
+
+	public static function listAll()
+	{
+		
+		$sql = new Sql();
+		
+		$results = $sql->select("
+			SELECT *
+			  FROM tb_orders o
+			 INNER JOIN tb_ordersstatus os USING (idstatus)
+			 INNER JOIN tb_carts c USING (idcart)
+			 INNER JOIN tb_users u ON u.iduser = o.iduser
+			 INNER JOIN tb_addresses a USING (idaddress)
+			 INNER JOIN tb_persons p ON p.idperson = u.idperson
+			 ORDER BY o.dtregister desc");
+
+		return $results;
+	}
+
+	public function delete()
+	{
+
+		$sql = new Sql();
+
+		$sql->query("DELETE FROM tb_orders WHERE idorder=:idorder", [
+			':idorder'=>$this->getidorder()
+		]);
+	}
 }
 
  ?>

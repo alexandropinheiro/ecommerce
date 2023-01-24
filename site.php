@@ -522,6 +522,7 @@ $app->get("/boleto/:idorder", function($idorder){
 	$valor_cobrado = $order->getvltotal(); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
 
 	$valor_cobrado = str_replace(",", ".",$valor_cobrado);
+
 	$valor_boleto=$valor_cobrado+$taxa_boleto;
 
 	$dadosboleto["nosso_numero"] = $order->getidorder();  // Nosso numero - REGRA: Máximo de 8 caracteres!

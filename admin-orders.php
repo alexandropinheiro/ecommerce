@@ -91,10 +91,29 @@ $app->get("/admin/orders", function(){
 
 	User::verifyLogin();
 
+	$search = isset($_GET['search']) ? $_GET['search'] : '';
+	$page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+	$pagination = Order::getPage($search, $page);
+
+	$pages = [];
+
+	for ($i=1; $i <= $pagination['pages'] ; $i++) { 
+		array_push($pages, [
+			'href'=>'/admin/orders?'.http_build_query([
+										'page'=>$i,
+										'search'=>$search
+									]),
+			'text'=>$i
+		]);
+	}
+
 	$page = new PageAdmin();
 
 	$page->setTpl("orders", [
-		'orders'=>Order::listAll()
+		'orders'=>$pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
 	]);
 
 });

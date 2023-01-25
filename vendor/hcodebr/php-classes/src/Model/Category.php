@@ -86,6 +86,35 @@ class Category extends Model
 		return $sql->select($command, array(':idcategory'=>$this->getidcategory()));
 	}
 
+	public static function getPage($search, $page = 1, $itemsPerPage = 3)
+	{
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+		
+		$selectCommand =
+		    "SELECT SQL_CALC_FOUND_ROWS *
+			   FROM tb_categories
+			  WHERE descategory LIKE :search
+			  ORDER BY descategory
+			  LIMIT $start, $itemsPerPage";
+ 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+
+		$results = $sql->select($selectCommand, array(
+			':search'=>'%'.$search.'%'
+		));
+
+		$resultTotal = $sql->select($totalCommand);
+
+		$totalItems = (int)$resultTotal[0]['nrtotal'];
+
+		return [
+			'data'=>$results,
+			'total'=>(int)$totalItems,
+			'pages'=>ceil($totalItems / $itemsPerPage)
+		];
+	}
+
 	public function getProductsPaginated($page = 1, $itemsPerPage = 3)
 	{
 		$start = ($page - 1) * $itemsPerPage;

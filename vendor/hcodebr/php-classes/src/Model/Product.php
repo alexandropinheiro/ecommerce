@@ -6,34 +6,24 @@ use \Hcode\DB\Sql;
 use \Hcode\Model;
 
 class Product extends Model
-{		
-	public static function getPage($search, $page = 1, $itemsPerPage = 3)
+{
+	public static function listAll()
 	{
-		$start = ($page - 1) * $itemsPerPage;
-
 		$sql = new Sql();
-		
+
+		return $sql->select("SELECT *
+			   FROM tb_products
+			  ORDER BY desproduct");
+	}
+	public static function getPage($search, $page = 1)
+	{
 		$selectCommand =
 		    "SELECT SQL_CALC_FOUND_ROWS *
 			   FROM tb_products
 			  WHERE desproduct LIKE :search
-			  ORDER BY desproduct
-			  LIMIT $start, $itemsPerPage";
- 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+			  ORDER BY desproduct";
 
-		$results = $sql->select($selectCommand, array(
-			':search'=>'%'.$search.'%'
-		));
-
-		$resultTotal = $sql->select($totalCommand);
-
-		$totalItems = (int)$resultTotal[0]['nrtotal'];
-
-		return [
-			'data'=>$results,
-			'total'=>(int)$totalItems,
-			'pages'=>ceil($totalItems / $itemsPerPage)
-		];
+		return parent::getPaginated($selectCommand, $search, $page);
 	}
 
 	public static function checkList($list)

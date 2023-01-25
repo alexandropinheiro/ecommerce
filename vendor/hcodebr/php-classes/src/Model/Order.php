@@ -66,10 +66,6 @@ class Order extends Model
 
 	public static function getPage($search, $page = 1, $itemsPerPage = 3)
 	{
-		$start = ($page - 1) * $itemsPerPage;
-
-		$sql = new Sql();
-		
 		$selectCommand =
 		    "SELECT SQL_CALC_FOUND_ROWS *
 			   FROM tb_orders o
@@ -78,26 +74,11 @@ class Order extends Model
 			  INNER JOIN tb_users u ON u.iduser = o.iduser
 			  INNER JOIN tb_addresses a USING (idaddress)
 			  INNER JOIN tb_persons p ON p.idperson = u.idperson
-			  WHERE o.idorder = :id
+			  WHERE o.idorder = :exactValue
 			     OR p.desperson LIKE :search
-			  ORDER BY o.dtregister DESC
-			  LIMIT $start, $itemsPerPage";
- 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+			  ORDER BY o.dtregister DESC";
 
-		$results = $sql->select($selectCommand, array(
-			':search'=>'%'.$search.'%',
-			':id'=>$search
-		));
-
-		$resultTotal = $sql->select($totalCommand);
-
-		$totalItems = (int)$resultTotal[0]['nrtotal'];
-
-		return [
-			'data'=>$results,
-			'total'=>(int)$totalItems,
-			'pages'=>ceil($totalItems / $itemsPerPage)
-		];
+		return parent::getPaginated($selectCommand, $search, $page, true);
 	}
 
 	public function delete()

@@ -2,6 +2,8 @@
 
 namespace Hcode;
 
+use \Hcode\DB\Sql;
+
 class Model
 {
 	
@@ -35,6 +37,35 @@ class Model
 	public function getValues()
 	{		
 		return $this->values;
+	}
+
+	public static function getPaginated($selectCommand, $search, $page = 1, $hasExactValue = false)
+	{
+		$itemsPerPage = 10;
+
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+				
+ 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+
+ 		if ($hasExactValue){
+ 			$params = array(':search'=>'%'.$search.'%', ':exactValue'=>$search);
+ 		}else{
+ 			$params = array(':search'=>'%'.$search.'%');
+ 		}
+ 		
+ 		$results = $sql->select($selectCommand, $params);
+
+		$resultTotal = $sql->select($totalCommand);
+
+		$totalItems = (int)$resultTotal[0]['nrtotal'];
+
+		return [
+			'data'=>$results,
+			'total'=>(int)$totalItems,
+			'pages'=>ceil($totalItems / $itemsPerPage)
+		];
 	}
 }
 

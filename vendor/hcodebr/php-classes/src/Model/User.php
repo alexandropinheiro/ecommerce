@@ -6,14 +6,11 @@ use \Hcode\DB\Sql;
 use \Hcode\Model;
 use \Hcode\Security\Crypt;
 use \Hcode\Mailer;
+use \Hcode\Utils\Session;
 
 class User extends Model
 {	
 	const SESSION = "User";
-	const SESSION_ERRO = "UserErro";
-	const SESSION_REGISTER = "UserRegister";
-	const SESSION_PROFILE = "UserProfile";
-	const SESSION_REGISTER_ERRO = "UserRegisterErrors";
 
 	public static function getFromSession()
 	{
@@ -298,87 +295,7 @@ class User extends Model
 			":iduser"=>$this->getiduser()
 		));
 	}
-
-	public static function setError($msg)
-	{
-		$_SESSION[User::SESSION_ERRO] = $msg;
-	}
-
-	public static function getError()
-	{
-		$msg = isset($_SESSION[User::SESSION_ERRO]) ? $_SESSION[User::SESSION_ERRO] : '';
-		User::clearMsgError();
-		return $msg;
-	}
-
-	public static function clearMsgError()
-	{
-		$_SESSION[User::SESSION_ERRO] = NULL;
-	}
-
-	public static function setRegisterError($errors)
-	{
-		$_SESSION[User::SESSION_REGISTER_ERRO] = $errors;
-	}
-
-	public static function getRegisterError()
-	{
-		$errors = isset($_SESSION[User::SESSION_REGISTER_ERRO]) ? $_SESSION[User::SESSION_REGISTER_ERRO] : [];
-		User::clearRegisterError();
-		return $errors;
-	}
-
-	public static function clearRegisterError()
-	{
-		$_SESSION[User::SESSION_REGISTER_ERRO] = NULL;
-	}
-
-	public static function setRegisterSession($user)
-	{
-		$_SESSION[User::SESSION_REGISTER] = $user;
-	}
-
-	public static function getRegisterSession()
-	{
-		$msg = isset($_SESSION[User::SESSION_REGISTER]) 
-			? $_SESSION[User::SESSION_REGISTER] 
-			: [
-				'name'=>'',
-				'email'=>'',
-				'phone'=>''
-			  ];
-		User::clearRegisterSession();
-		return $msg;
-	}
-
-	public static function clearRegisterSession()
-	{
-		$_SESSION[User::SESSION_REGISTER] = NULL;
-	}
-
-	public static function setProfileSession($profile)
-	{
-		$_SESSION[User::SESSION_PROFILE] = $profile;
-	}
-
-	public static function getProfileSession()
-	{
-		$profile = isset($_SESSION[User::SESSION_PROFILE]) 
-			? $_SESSION[User::SESSION_PROFILE] 
-			: [
-				'desperson'=>'',
-				'desemail'=>'',
-				'nrphone'=>''
-			  ];
-		User::clearProfileSession();
-		return $profile;
-	}
-
-	public static function clearProfileSession()
-	{
-		$_SESSION[User::SESSION_PROFILE] = NULL;
-	}
-
+		
 	public static function getByEmail($email)
 	{
 		$sql = new Sql();
@@ -418,7 +335,7 @@ class User extends Model
 			$return = true;
 		}
 
-		User::setRegisterError($errors);
+		Session::setListError($errors);
 
 		return $return;
 	}
@@ -445,7 +362,7 @@ class User extends Model
 			}
 		}
 
-		User::setRegisterError($errors);
+		Session::setListError($errors);
 
 		return $return;
 	}

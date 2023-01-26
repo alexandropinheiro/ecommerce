@@ -36,7 +36,7 @@ $app->get("/admin/orders/:idorder/status", function($idorder){
 		'order'=>$order->getValues(),
 		'status'=>OrderStatus::listAll(),
 		'msgError'=>Session::getError(),
-		'msgSuccess'=>Session::getSuccessMessage()
+		'msgSuccess'=>Session::getSuccess()
 	]);
 	
 });
@@ -59,7 +59,7 @@ $app->post("/admin/orders/:idorder/status", function($idorder){
 
 	$order->save();
 
-	Session::setSuccessMessage('Status alterado com sucesso!');
+	Session::setSuccess('Status alterado com sucesso!');
 	header("Location: /admin/orders/$idorder/status");
 	exit;
 	

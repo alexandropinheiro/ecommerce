@@ -148,7 +148,7 @@ $app->get("/checkout", function () {
 	$erroMsg = Session::getError();
 
 	if ($erroMsg !== ''){
-		$loadAddress = Session::getAddressSession();
+		$loadAddress = Session::getRegister(NULL);
 	}
 	else
 	{
@@ -194,7 +194,7 @@ $app->post("/checkout", function() {
 
 	User::verifyLogin(false);
 
-	Session::setAddressSession($_POST);
+	Session::setRegister($_POST);
 
 	$verify = true;
 
@@ -277,13 +277,17 @@ $app->get("/login", function () {
 	
 	$page = new Page();
 
-	$registerErrors = User::getRegisterError();
+	$registerErrors = Session::getListError();
 
 	$page->setTpl("login", [
-		'error'=>User::getError(),
+		'error'=>Session::getError(),
 		'hasListErrors'=>count($registerErrors) > 0 ? 1 : 0,
 		'registerErrors' => $registerErrors,
-		'registerValues'=>User::getRegisterSession()
+		'registerValues'=>Session::getRegister([
+				'name'=>'',
+				'email'=>'',
+				'phone'=>''
+			  ])
 	]);
 
 });
@@ -297,7 +301,7 @@ $app->post("/login", function () {
 		
 	} catch (Exception $e) {
 
-		User::setError($e->getMessage());
+		Session::setError($e->getMessage());
 		$route = "/login";
 
 	}	
@@ -317,8 +321,7 @@ $app->get("/logout", function () {
 
 $app->post("/register", function(){
 
-	User::setRegisterSession($_POST);
-	User::clearRegisterError();
+	Session::setRegister($_POST);
 
 	$hasRegisterError = User::hasRegisterErrors($_POST);
 	
@@ -434,15 +437,19 @@ $app->get("/profile", function() {
 
 	User::verifyLogin(false);
 
-	$registerErrors = User::getRegisterError();
+	$registerErrors = Session::getListError();
 
-	$userErrorMsg = User::getError();
+	$userErrorMsg = Session::getError();
 
-	$profileMessage = Session::getSuccessMessage();
+	$profileMessage = Session::getSuccess();
 
 	if (count($registerErrors) > 0 || $userErrorMsg != '') {
 
-		$formData = User::getProfileSession();
+		$formData = Session::getRegister([
+				'desperson'=>'',
+				'desemail'=>'',
+				'nrphone'=>''
+			  ]);
 
 	} else {
 
@@ -466,8 +473,7 @@ $app->post("/profile", function() {
 
 	User::verifyLogin(false);
 
-	User::setProfileSession($_POST);
-	User::clearRegisterError();
+	Session::setRegister($_POST);
 
 	$user = User::getFromSession();
 
@@ -485,7 +491,7 @@ $app->post("/profile", function() {
 
 	$user->update();
 
-	Session::setSuccessMessage('Dados alterados com sucesso!');
+	Session::setSuccess('Dados alterados com sucesso!');
 
 	header("Location: /profile");
 	exit;
@@ -623,7 +629,7 @@ $app->get("/profile/change-password", function(){
 
 	$page->setTpl("profile-change-password", [
 		'changePassError'=>Session::getError(),
-		'changePassSuccess'=>Session::getSuccessMessage()
+		'changePassSuccess'=>Session::getSuccess()
 	]);
 
 });
@@ -664,6 +670,14 @@ $app->post("/profile/change-password", function(){
 
 	$user = User::getFromSession();
 
+	if (Crypt::encryptPassword($_POST['current_pass']) !== $user->getdespassword()){
+
+		Session::setError('A senha está inválida.');
+		header("Location: /profile/change-password");
+		exit;
+
+	}
+
 	if (Crypt::encryptPassword($_POST['new_pass']) === $user->getdespassword()){
 		Session::setError('A senha está inválida.');
 		header("Location: /profile/change-password");
@@ -674,7 +688,7 @@ $app->post("/profile/change-password", function(){
 
 	$user->update();
 
-	Session::setSuccessMessage('Senha alterada com sucesso!');
+	Session::setSuccess('Senha alterada com sucesso!');
 
 	header("Location: /profile/change-password");
 	exit;

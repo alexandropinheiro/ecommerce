@@ -46,6 +46,8 @@ class Model
 		$start = ($page - 1) * $itemsPerPage;
 
 		$sql = new Sql();
+
+		$selectCommand .= " LIMIT $start, $itemsPerPage";
 				
  		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
 

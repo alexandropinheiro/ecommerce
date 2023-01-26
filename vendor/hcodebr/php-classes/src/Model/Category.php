@@ -90,6 +90,15 @@ class Category extends Model
 		return parent::getPaginated($selectCommand, $search, $page);
 	}
 
+	public static function listAll()
+	{
+		$sql = new Sql();
+
+		return $sql->select("SELECT *
+			   FROM tb_categories
+			  ORDER BY descategory");
+	}
+
 	public function getProductsPaginated($page = 1, $itemsPerPage = 3)
 	{
 		$start = ($page - 1) * $itemsPerPage;

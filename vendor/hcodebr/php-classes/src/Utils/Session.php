@@ -7,13 +7,15 @@ class Session
 	const SESSION_SUCCESS = "successMessage";
 	const SESSION_ERROR = "errorMessage";
 	const SESSION_ADDRESS = "address";
+	const SESSION_REGISTER = "registers";
+	const SESSION_LIST_ERRO = "listErrors";
 
-	public static function setSuccessMessage($msg)
+	public static function setSuccess($msg)
 	{
 		$_SESSION[Session::SESSION_SUCCESS] = $msg;
 	}
 
-	public static function getSuccessMessage()
+	public static function getSuccess()
 	{
 		$msg = isset($_SESSION[Session::SESSION_SUCCESS]) 
 			? $_SESSION[Session::SESSION_SUCCESS] 
@@ -40,20 +42,30 @@ class Session
 		return $msg;
 	}
 
-	public static function setAddressSession($address)
+	public static function setListError($errors)
 	{
-		$_SESSION[Session::SESSION_ADDRESS] = $address;
+		$_SESSION[Session::SESSION_LIST_ERRO] = $errors;
 	}
 
-	public static function getAddressSession()
+	public static function getListError()
 	{
-		$address = isset($_SESSION[Session::SESSION_ADDRESS]) 
-			? $_SESSION[Session::SESSION_ADDRESS] 
-			: NULL;
+		$errors = isset($_SESSION[Session::SESSION_LIST_ERRO]) ? $_SESSION[Session::SESSION_LIST_ERRO] : [];
+		$_SESSION[Session::SESSION_LIST_ERRO] = NULL;
+		return $errors;
+	}
 
-		$_SESSION[Session::SESSION_ADDRESS] = NULL;
-		
-		return $address;
+	public static function setRegister($user)
+	{
+		$_SESSION[Session::SESSION_REGISTER] = $user;
+	}
+
+	public static function getRegister($defaultData = [])
+	{
+		$msg = isset($_SESSION[Session::SESSION_REGISTER]) 
+			? $_SESSION[Session::SESSION_REGISTER] 
+			: $defaultData;
+		$_SESSION[Session::SESSION_REGISTER] = NULL;
+		return $msg;
 	}
 }
 

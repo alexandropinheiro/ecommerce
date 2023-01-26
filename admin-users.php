@@ -54,7 +54,7 @@ $app->get('/admin/users/:iduser/password', function($iduser){
 	$page->setTpl("users-password", [
 		'user'=>$user->getValues(),
 		'msgError'=>Session::getError(),
-		'msgSuccess'=>Session::getSuccessMessage()
+		'msgSuccess'=>Session::getSuccess()
 	]);
 
 });
@@ -87,7 +87,7 @@ $app->post('/admin/users/:iduser/password', function($iduser){
 
 	$user->setPassword($_POST['despassword']);
 
-	Session::setSuccessMessage('Senha alterada com sucesso!');
+	Session::setSuccess('Senha alterada com sucesso!');
 
 	header("Location: /admin/users/$iduser/password");
 	exit;

@@ -87,7 +87,7 @@ class Category extends Model
 			  WHERE descategory LIKE :search
 			  ORDER BY descategory";			  
 
-		return parent::getPaginated($selectCommand, $search, $page);
+		return parent::getPaginated($selectCommand, [':search'=>'%'.$search.'%'], $page);
 	}
 
 	public static function listAll()
@@ -101,33 +101,18 @@ class Category extends Model
 
 	public function getProductsPaginated($page = 1, $itemsPerPage = 3)
 	{
-		$start = ($page - 1) * $itemsPerPage;
-
-		$sql = new Sql();
-		
 		$selectCommand =
 		    "SELECT SQL_CALC_FOUND_ROWS *
 			   FROM tb_products p
 			  INNER JOIN tb_productscategories pc USING(idproduct)
 			  INNER JOIN tb_categories c USING(idcategory)
-			  WHERE c.idcategory=:idcategory
-			  LIMIT $start, $itemsPerPage";
- 		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
+			  WHERE c.idcategory=:idcategory";
 
-		$results = $sql->select($selectCommand, array(
-			':idcategory'=>$this->getidcategory()
-		));
+		$result = parent::getPaginated($selectCommand, [':idcategory'=>$this->getidcategory()], $page, $itemsPerPage);
 
-		$resultTotal = $sql->select($totalCommand);
+		$result['data'] = Product::checkList($result['data']);
 
-		$totalItems = (int)$resultTotal[0]['nrtotal'];
-
-
-		return [
-			'data'=>Product::checkList($results),
-			'total'=>$totalItems,
-			'pages'=>ceil($totalItems / $itemsPerPage)
-		];
+		return $result;
 	}
 
 	public function addProduct(Product $product)

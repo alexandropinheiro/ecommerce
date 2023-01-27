@@ -23,7 +23,7 @@ class Product extends Model
 			  WHERE desproduct LIKE :search
 			  ORDER BY desproduct";
 
-		return parent::getPaginated($selectCommand, $search, $page);
+		return parent::getPaginated($selectCommand, [':search'=>'%'.$search.'%'], $page);
 	}
 
 	public static function checkList($list)

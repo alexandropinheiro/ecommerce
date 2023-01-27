@@ -74,11 +74,11 @@ class Order extends Model
 			  INNER JOIN tb_users u ON u.iduser = o.iduser
 			  INNER JOIN tb_addresses a USING (idaddress)
 			  INNER JOIN tb_persons p ON p.idperson = u.idperson
-			  WHERE o.idorder = :exactValue
+			  WHERE o.idorder = :idorder
 			     OR p.desperson LIKE :search
 			  ORDER BY o.dtregister DESC";
 
-		return parent::getPaginated($selectCommand, $search, $page, true);
+		return parent::getPaginated($selectCommand, [':search'=>'%'.$search.'%', ':idorder'=>$search], $page);
 	}
 
 	public function delete()

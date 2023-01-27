@@ -395,7 +395,7 @@ class User extends Model
 			     OR p.desemail LIKE :search
 			     OR u.deslogin LIKE :search";
 
-		return parent::getPaginated($selectCommand, $search, $page);
+		return parent::getPaginated($selectCommand, [':search'=>'%'.$search.'%'], $page);
 	}
 }
 

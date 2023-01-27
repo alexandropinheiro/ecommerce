@@ -39,10 +39,8 @@ class Model
 		return $this->values;
 	}
 
-	public static function getPaginated($selectCommand, $search, $page = 1, $hasExactValue = false)
+	public static function getPaginated($selectCommand, $params = [], $page = 1, $itemsPerPage = 10)
 	{
-		$itemsPerPage = 10;
-
 		$start = ($page - 1) * $itemsPerPage;
 
 		$sql = new Sql();
@@ -50,12 +48,6 @@ class Model
 		$selectCommand .= " LIMIT $start, $itemsPerPage";
 				
  		$totalCommand = "SELECT FOUND_ROWS() as nrtotal";
-
- 		if ($hasExactValue){
- 			$params = array(':search'=>'%'.$search.'%', ':exactValue'=>$search);
- 		}else{
- 			$params = array(':search'=>'%'.$search.'%');
- 		}
  		
  		$results = $sql->select($selectCommand, $params);
 

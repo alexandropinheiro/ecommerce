@@ -10,6 +10,8 @@ use \Hcode\Model\Order;
 use \Hcode\Model\OrderStatus;
 use \Hcode\Security\Crypt;
 use \Hcode\Utils\Session;
+use \Hcode\Infrastructure\Client;
+use \Spatie\ArrayToXml\ArrayToXml;
 
 $app->get('/', function() {
     
@@ -158,6 +160,8 @@ $app->get("/checkout", function () {
 
 		if (isset($_GET['zipcode']) && $_GET['zipcode'] === ''){
 			if (!$address->getdesaddress()) $address->setdesaddress('');
+			if (!$address->getdesnumber()) $address->setdesnumber('');
+			if (!$address->getdesaddress()) $address->setdesaddress('');
 			if (!$address->getdescomplement()) $address->setdescomplement('');
 			if (!$address->getdesdistrict()) $address->setdesdistrict('');
 			if (!$address->getdescity()) $address->setdescity('');
@@ -191,7 +195,7 @@ $app->get("/checkout", function () {
 });
 
 $app->post("/checkout", function() {
-
+	
 	User::verifyLogin(false);
 
 	Session::setRegister($_POST);
@@ -210,8 +214,8 @@ $app->post("/checkout", function() {
 		exit;
 	}
 
-	if (isset($_POST['descomplement']) && $_POST['descomplement'] === ''){
-		Session::setError("Informe o complemento!");
+	if (isset($_POST['desnumber']) && $_POST['desnumber'] === ''){
+		Session::setError("Informe o número!");
 		header("Location: /checkout");
 		exit;
 	}
@@ -268,8 +272,99 @@ $app->post("/checkout", function() {
 
 	$order->save();
 
-	header("Location: /order/".$order->getidorder());
+	switch ((int)$_POST['payment-method']) {
+		case 1:
+			header("Location: order/".$order->getidorder()."/pagseguro");
+			break;
+		
+		case 2:
+			header("Location: order/".$order->getidorder()."/paypal");
+			break;
+	}
+	
 	exit;
+
+});
+
+$app->get("/order/:idorder/pagseguro", function($idorder){
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$cart = new Cart();
+
+	$cart->get((int)$order->getidcart());
+
+	$nrphone = $order->getnrphone();
+
+	$arrayBody = $order->getArrayForPagSeguro($cart);
+
+	$xmlBody = ArrayToXml::convert($arrayBody);
+
+	$indice = strpos($xmlBody, "<root>");
+
+	$xmlBody = substr($xmlBody, $indice+6, strlen($xmlBody));
+
+	$xmlBody = str_replace("</root>", "", $xmlBody);
+	$xmlBody = str_replace("</items><items>", "", $xmlBody);
+
+	$queryString = [
+		'email'=>'alexandro.analista@gmail.com',
+		'token'=>'EE0D8C1C1ED8400C90755651EAD6698E'
+	];
+
+	$client = new Client();
+
+	$url = "https://ws.sandbox.pagseguro.uol.com.br/v2/checkout?" . http_build_query($queryString);
+	$header = array("Content-Type: application/xml");
+
+	$result = $client->post($url, $header, $xmlBody);
+
+	var_dump($result);
+	exit;
+
+	$page = new Page([
+		'header'=>false,
+		'footer'=>false
+	]);
+
+	$page->setTpl("payment-pagseguro", [
+		'order'=>$order->getValues(),
+		'cart'=>$cart->getValues(),
+		'products'=>$cart->getProducts(),
+		'phone'=>[
+			'areaCode'=>substr($nrphone, 0, 2),
+			'number'=>substr($nrphone, 0, strlen($nrphone))
+		]
+	]);
+
+});
+
+$app->get("/order/:idorder/paypal", function($idorder){
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->get((int)$idorder);
+
+	$cart = new Cart();
+
+	$cart->get((int)$order->getidcart());
+
+	$page = new Page([
+		'header'=>false,
+		'footer'=>false
+	]);
+
+	$page->setTpl("payment-paypal", [
+		'order'=>$order->getValues(),
+		'cart'=>$cart->getValues(),
+		'products'=>$cart->getProducts()
+	]);
 
 });
 

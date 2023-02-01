@@ -5,6 +5,7 @@ namespace Hcode\Model;
 use \Hcode\DB\Sql;
 use \Hcode\Model;
 
+
 class Order extends Model
 {
 	public function save()
@@ -89,6 +90,75 @@ class Order extends Model
 		$sql->query("DELETE FROM tb_orders WHERE idorder=:idorder", [
 			':idorder'=>$this->getidorder()
 		]);
+	}
+
+	public function getArrayForPagSeguro($cart)
+	{
+		$nrphone = $this->getnrphone();
+
+		$documents = array('document'=>[
+			'type'=>'CPF',
+			'value'=>'79726566061'
+		]);
+
+		$products = $cart->getProducts();
+
+		$items = array();
+
+		foreach ($products as $row) {
+			array_push($items, [
+				'item'=>[
+					'id'=>$row['idproduct'],
+					'description'=>$row['desproduct'],
+					'amount'=>$row['vltotal'],
+					'quantity'=>$row['nrqtd'],
+					'weight'=>$row['vlweight']*1000,
+					'shippingCost'=>'1.00'
+				]
+			]);
+		}
+
+		$arrayBody = [
+			'checkout'=>[
+				'sender'=>[
+					'name'=>$this->getdesperson(),
+					'email'=>$this->getdesemail(),
+					'phone'=>[
+						'areaCode'=>substr($nrphone, 0, 2),
+						'number'=>substr($nrphone, 2, strlen($nrphone))
+					],
+					'documents'=>$documents
+				],
+				'currency'=>'BRL',
+				'items'=>$items,
+				'extraAmount'=>'0.00',
+				'reference'=>$this->getidorder(),
+				'shipping'=>[
+					'address'=>[
+						'street'=>$this->getdesaddress(),
+						'number'=>$this->getdesnumber(),
+						'complement'=>$this->getdescomplement(),
+						'district'=>$this->getdesdistrict(),
+						'city'=>$this->getdescity(),
+						'state'=>$this->getdesstate(),
+						'country'=>$this->getdescountry(),
+						'postalCode'=>$this->getdeszipcode()
+					],
+					'type'=>1,
+					'cost'=>$cart->getvlfreight(),
+					'addressRequired'=>"true",
+
+				],
+				'maxAge'=>1000,
+				'maxUse'=>1000,
+				'receiver'=>[
+					'email'=>'alexandro.analista@gmail.com'
+				],
+				'enableRecover'=>"false"
+			]
+		];
+
+		return $arrayBody;
 	}
 }
 

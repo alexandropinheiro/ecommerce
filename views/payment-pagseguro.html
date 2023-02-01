@@ -1,0 +1,37 @@
+<form method="post" action="https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=EE0D8C1C1ED8400C90755651EAD6698E">
+	
+	<input type="hidden" name="receiverEmail" value="alexandro.analista@gmail.com">
+	<input type="hidden" name="currency" value="BRL">
+
+	{loop="$products"}
+	<input type="hidden" name="itemId{$counter+1}" value="{$value.idproduct}">
+	<input type="hidden" name="itemDescription{$counter+1}" value="{$value.desproduct}">
+	<input type="hidden" name="itemAmount{$counter+1}" value="{$value.vltotal}">
+	<input type="hidden" name="itemQuantity{$counter+1}" value="{$value.nrqtd}">
+	<input type="hidden" name="itemWeight{$counter+1}" value="{$value.vlweight*1000}">
+	{/loop}
+
+	<input type="hidden" name="reference" value="{$order.idorder}">
+
+	<input type="hidden" name="shippingType" value="1">
+	<input type="hidden" name="shippingAddressPostalCode" value="{$order.deszipcode}">
+	<input type="hidden" name="shippingAddressStreet" value="{$order.desaddress}">
+	<input type="hidden" name="shippingAddressNumber" value="{$order.desnumber}">
+	<input type="hidden" name="shippingAddressComplement" value="{$order.descomplement}">
+	<input type="hidden" name="shippingAddressDistrict" value="{$order.desdistrict}">
+	<input type="hidden" name="shippingAddressCity" value="{$order.descity}">
+	<input type="hidden" name="shippingAddressState" value="{$order.desstate}">
+	<input type="hidden" name="shippingAddressCountry" value="{$order.descountry}">
+
+	<input type="hidden" name="senderName" value="{$order.desperson}">
+	<input type="hidden" name="senderAreaCode" value="{$phone.areaCode}">
+	<input type="hidden" name="senderPhone" value="{$phone.number}">
+	<input type="hidden" name="senderEmail" value="{$order.desemail}">
+
+	<!-- <input type="image" name="submit" alt="Pague com PagSeguro" src="https://p.simg.uol.com.br/out/pagseguro/i/botoes/pagamentos/120x53-pagar.gif"/> -->
+
+</form>
+
+<script type="text/javascript">
+	document.forms[0].submit();
+</script>
